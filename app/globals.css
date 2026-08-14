@@ -1943,7 +1943,6 @@ footer {
 }
 .hero-paths {
   background: rgba(5, 5, 5, 0.68);
-  backdrop-filter: blur(8px);
 }
 
 /* Sticky product navigation */

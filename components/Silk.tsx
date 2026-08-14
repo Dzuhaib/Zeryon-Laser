@@ -64,13 +64,23 @@ const SilkPlane = forwardRef<
   THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>,
   { uniforms: Uniforms }
 >(function SilkPlane({ uniforms }, ref) {
-  const { viewport } = useThree();
+  const { viewport, invalidate } = useThree();
 
   useLayoutEffect(() => {
     if (ref && "current" in ref && ref.current) {
       ref.current.scale.set(viewport.width, viewport.height, 1);
     }
   }, [ref, viewport]);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const tick = () => {
+      if (document.visibilityState === "visible") invalidate();
+      timer = setTimeout(tick, 50);
+    };
+    tick();
+    return () => clearTimeout(timer);
+  }, [invalidate]);
 
   useFrame((_, delta) => {
     if (ref && "current" in ref && ref.current) {
@@ -131,8 +141,9 @@ export default function Silk({
   return (
     <Canvas
       className="silk-canvas"
-      dpr={[1, 2]}
-      frameloop="always"
+      dpr={1}
+      frameloop="demand"
+      gl={{ antialias: false, powerPreference: "low-power" }}
       camera={{ position: [0, 0, 1] }}
     >
       <SilkPlane ref={meshRef} uniforms={uniforms} />
