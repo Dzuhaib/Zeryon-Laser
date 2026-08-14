@@ -15,6 +15,11 @@ export const metadata: Metadata = {
     description: "Train. Equip. Grow.",
     type: "website",
   },
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
