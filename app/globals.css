@@ -417,6 +417,20 @@ footer {
     width: 132px;
     height: 46px;
   }
+  .header .wordmark {
+    margin-left: 0;
+    margin-right: auto;
+  }
+  .header .brand-logo {
+    object-fit: contain;
+    object-position: left center;
+  }
+  .header-actions {
+    order: 2;
+  }
+  .menu {
+    order: 3;
+  }
   .footer-mark {
     width: 220px;
     height: 165px;
