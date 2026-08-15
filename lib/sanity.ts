@@ -2,8 +2,8 @@ import { createClient } from "@sanity/client";
 import { fallbackProducts } from "./products";
 import type { Product } from "./types";
 
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "4kxmr9b8";
-const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
+const projectId = process.env.SANITY_PROJECT_ID || "4kxmr9b8";
+const dataset = process.env.SANITY_DATASET || "production";
 
 export const sanity = createClient({
   projectId,
