@@ -3,6 +3,7 @@ import "./globals.css";
 import { CartProvider } from "@/components/CartProvider";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { ClerkProvider } from "@clerk/nextjs";
 export const metadata: Metadata = {
   title: {
     default: "ZERYON | Advanced Aesthetic Technology",
@@ -22,14 +23,23 @@ export const metadata: Metadata = {
   },
 };
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  const application = (
+    <CartProvider>
+      <Header clerkEnabled={clerkEnabled} />
+      <main>{children}</main>
+      <Footer />
+    </CartProvider>
+  );
+
   return (
     <html lang="en">
       <body>
-        <CartProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
-        </CartProvider>
+        {clerkEnabled ? (
+          <ClerkProvider>{application}</ClerkProvider>
+        ) : (
+          application
+        )}
       </body>
     </html>
   );

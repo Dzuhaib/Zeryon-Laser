@@ -299,6 +299,143 @@ footer {
   }
 }
 
+/* Clerk authentication */
+.clerk-hidden {
+  display: none !important;
+}
+
+.account-link {
+  color: var(--silver);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.account-link:hover {
+  color: var(--gold);
+}
+
+.zeryon-avatar {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--gold);
+}
+
+.auth-page,
+.account-page {
+  min-height: 100vh;
+  padding: 150px 8vw 100px;
+  background: #050505;
+}
+
+.auth-page {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(360px, 0.65fr);
+  align-items: center;
+  gap: 10vw;
+}
+
+.auth-intro h1,
+.account-heading h1 {
+  margin: 14px 0 20px;
+  font-size: clamp(3rem, 5vw, 5.5rem);
+  line-height: 1;
+}
+
+.auth-intro > p:last-child,
+.account-heading > p:last-child {
+  max-width: 500px;
+  color: var(--muted);
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 480px;
+}
+
+.clerk-card-box,
+.clerk-card {
+  width: 100%;
+  max-width: none;
+  box-shadow: none;
+}
+
+.clerk-card {
+  border: 1px solid var(--line);
+  background: #090909;
+}
+
+.clerk-title {
+  font-family: var(--serif);
+  letter-spacing: 0;
+}
+
+.clerk-subtitle {
+  color: var(--muted);
+}
+
+.clerk-social-button,
+.clerk-input {
+  border: 1px solid var(--line);
+  background: #11110f;
+  color: var(--text);
+  box-shadow: none;
+}
+
+.clerk-primary-button {
+  background: var(--gold);
+  color: #080706;
+  box-shadow: none;
+}
+
+.clerk-primary-button:hover {
+  background: #e0c05c;
+}
+
+.auth-switch {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.auth-switch a {
+  color: var(--gold);
+}
+
+.account-heading {
+  margin-bottom: 48px;
+}
+
+.account-page .cl-rootBox {
+  width: 100%;
+}
+
+.account-page .cl-userProfile-root {
+  width: 100%;
+}
+
+@media (max-width: 800px) {
+  .auth-page,
+  .account-page {
+    padding: 120px 5vw 70px;
+  }
+
+  .auth-page {
+    grid-template-columns: 1fr;
+    gap: 42px;
+  }
+
+  .auth-panel {
+    max-width: none;
+  }
+
+  .account-link {
+    display: none;
+  }
+}
+
 .growth-cta {
   padding: 130px 8vw;
   background: #11110f;
