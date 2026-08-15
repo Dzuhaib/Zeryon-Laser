@@ -324,6 +324,12 @@ footer {
   text-decoration: none;
   padding: 8px 10px 34px;
 }
+.admin-brand-logo {
+  display: block;
+  width: 118px;
+  height: auto;
+  object-fit: contain;
+}
 .admin-brand strong {
   display: block;
   letter-spacing: 0.16em;

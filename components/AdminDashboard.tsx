@@ -157,9 +157,12 @@ export default function AdminDashboard() {
     <section className="admin-shell">
       <aside className="admin-sidebar">
         <Link href="/admin" className="admin-brand">
-          <span className="admin-brand-mark">Z</span>
+          <img
+            className="admin-brand-logo"
+            src="/ZERYO%20LOGO%20TRANSPARENT.png"
+            alt="ZERYON"
+          />
           <span>
-            <strong>ZERYON</strong>
             <small>Admin console</small>
           </span>
         </Link>
