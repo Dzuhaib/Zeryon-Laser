@@ -17,6 +17,15 @@ type Product = {
   price: number;
   category: string;
   slug: string;
+  summary?: string;
+  description?: string;
+  applications?: string[];
+  features?: string[];
+  included?: string[];
+  specifications?: Array<{ label: string; value: string }>;
+  featured?: boolean;
+  order?: number;
+  image?: string;
 };
 type Order = {
   _id: string;
@@ -235,26 +244,55 @@ export default function AdminDashboard() {
                 <div className="admin-panel-head">
                   <div>
                     <p className="eyebrow">Performance</p>
-                    <h2>Sales over time</h2>
+                    <h2>Sales trend</h2>
                   </div>
                   <span>
                     {range === "all" ? "All time" : `Last ${range} days`}
                   </span>
                 </div>
-                <div className="sales-chart">
+                <div className="sales-chart sales-chart-line">
                   {chart.length ? (
-                    chart.map(([day, value]) => (
-                      <div className="sales-bar-wrap" key={day}>
-                        <div
-                          className="sales-bar"
-                          style={{
-                            height: `${Math.max(5, (value / max) * 100)}%`,
-                          }}
-                          title={`${day}: ${money(value)}`}
+                    <>
+                      <svg
+                        viewBox="0 0 700 220"
+                        role="img"
+                        aria-label="Sales trend"
+                      >
+                        <path
+                          className="chart-grid"
+                          d="M20 20H680 M20 110H680 M20 200H680"
                         />
-                        <small>{day.slice(5)}</small>
+                        <polyline
+                          className="chart-line"
+                          points={chart
+                            .map(
+                              ([, value], index) =>
+                                `${20 + index * (660 / Math.max(chart.length - 1, 1))},${200 - (value / max) * 170}`,
+                            )
+                            .join(" ")}
+                        />
+                        {chart.map(([day, value], index) => (
+                          <circle
+                            key={day}
+                            className="chart-dot"
+                            cx={
+                              20 + index * (660 / Math.max(chart.length - 1, 1))
+                            }
+                            cy={200 - (value / max) * 170}
+                            r="4"
+                          >
+                            <title>
+                              {day}: {money(value)}
+                            </title>
+                          </circle>
+                        ))}
+                      </svg>
+                      <div className="chart-labels">
+                        {chart.map(([day]) => (
+                          <small key={day}>{day.slice(5)}</small>
+                        ))}
                       </div>
-                    ))
+                    </>
                   ) : (
                     <p className="muted">
                       Sales will appear here after the first order.
@@ -402,41 +440,108 @@ function ProductManager({
   onDelete: (id: string) => void;
   onCreated: () => void;
 }) {
+  const emptyForm = {
+    name: "",
+    slug: "",
+    category: "Machine + Training",
+    price: "",
+    summary: "",
+    description: "",
+    applications: "",
+    features: "",
+    included: "",
+    specifications: "",
+    featured: true,
+    order: "",
+    imageData: "",
+    imageName: "",
+  };
   const [form, setForm] = useState({
     name: "",
     slug: "",
     category: "Machine + Training",
     price: "",
     summary: "",
+    description: "",
+    applications: "",
+    features: "",
+    included: "",
+    specifications: "",
+    featured: true,
+    order: "",
+    imageData: "",
+    imageName: "",
   });
+  const [editing, setEditing] = useState<string | null>(null);
+  const update = (key: string, value: string | boolean) =>
+    setForm((current) => ({ ...current, [key]: value }));
+  const parseList = (value: string) =>
+    value
+      .split("\n")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  const parseSpecs = (value: string) =>
+    value
+      .split("\n")
+      .map((line) => {
+        const [label, ...rest] = line.split("|");
+        return { label: label?.trim(), value: rest.join("|").trim() };
+      })
+      .filter((item) => item.label && item.value);
+  async function chooseImage(file?: File) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () =>
+      setForm((current) => ({
+        ...current,
+        imageData: String(reader.result),
+        imageName: file.name,
+      }));
+    reader.readAsDataURL(file);
+  }
   async function create(event: React.FormEvent) {
     event.preventDefault();
-    const response = await fetch("/api/admin/products", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...form, price: Number(form.price) }),
-    });
+    const response = await fetch(
+      editing ? `/api/admin/products/${editing}` : "/api/admin/products",
+      {
+        method: editing ? "PATCH" : "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          price: Number(form.price),
+          applications: parseList(form.applications),
+          features: parseList(form.features),
+          included: parseList(form.included),
+          specifications: parseSpecs(form.specifications),
+          order: Number(form.order || 99),
+        }),
+      },
+    );
     if (response.ok) {
-      setForm({
-        name: "",
-        slug: "",
-        category: "Machine + Training",
-        price: "",
-        summary: "",
-      });
+      setForm(emptyForm);
+      setEditing(null);
       onCreated();
     }
   }
-  async function edit(product: Product) {
-    const name = prompt("Product name", product.name);
-    const price = prompt("Price excluding VAT", String(product.price));
-    if (!name || !price) return;
-    await fetch(`/api/admin/products/${product._id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name, price: Number(price) }),
+  function edit(product: Product) {
+    setEditing(product._id);
+    setForm({
+      ...emptyForm,
+      name: product.name,
+      slug: product.slug,
+      category: product.category,
+      price: String(product.price || ""),
+      summary: product.summary || "",
+      description: product.description || "",
+      applications: (product.applications || []).join("\n"),
+      features: (product.features || []).join("\n"),
+      included: (product.included || []).join("\n"),
+      specifications: (product.specifications || [])
+        .map((item) => `${item.label} | ${item.value}`)
+        .join("\n"),
+      featured: product.featured !== false,
+      order: String(product.order || ""),
     });
-    onCreated();
   }
   return (
     <div className="admin-products">
@@ -479,7 +584,7 @@ function ProductManager({
         <div className="admin-panel-head">
           <div>
             <p className="eyebrow">Sanity catalogue</p>
-            <h2>Add product</h2>
+            <h2>{editing ? "Edit product" : "Add product"}</h2>
           </div>
         </div>
         <form className="admin-product-form" onSubmit={create}>
@@ -492,6 +597,69 @@ function ProductManager({
                 setForm({ ...form, name: event.target.value })
               }
             />
+          </label>
+          <label>
+            Description
+            <textarea
+              value={form.description}
+              onChange={(event) => update("description", event.target.value)}
+            />
+          </label>
+          <label>
+            Treatment applications
+            <textarea
+              placeholder="One item per line"
+              value={form.applications}
+              onChange={(event) => update("applications", event.target.value)}
+            />
+          </label>
+          <label>
+            Key features
+            <textarea
+              placeholder="One item per line"
+              value={form.features}
+              onChange={(event) => update("features", event.target.value)}
+            />
+          </label>
+          <label>
+            What's included
+            <textarea
+              placeholder="One item per line"
+              value={form.included}
+              onChange={(event) => update("included", event.target.value)}
+            />
+          </label>
+          <label>
+            Specifications
+            <textarea
+              placeholder="Label | Value (one per line)"
+              value={form.specifications}
+              onChange={(event) => update("specifications", event.target.value)}
+            />
+          </label>
+          <label>
+            Product image
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(event) => chooseImage(event.target.files?.[0])}
+            />
+          </label>
+          <label>
+            Display order
+            <input
+              type="number"
+              value={form.order}
+              onChange={(event) => update("order", event.target.value)}
+            />
+          </label>
+          <label className="admin-checkbox">
+            <input
+              type="checkbox"
+              checked={form.featured}
+              onChange={(event) => update("featured", event.target.checked)}
+            />{" "}
+            Featured product
           </label>
           <label>
             Slug
@@ -534,7 +702,7 @@ function ProductManager({
             />
           </label>
           <button className="button" type="submit">
-            Create product
+            {editing ? "Save changes" : "Create product"}
           </button>
         </form>
       </article>

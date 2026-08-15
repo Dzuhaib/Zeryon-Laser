@@ -36,10 +36,38 @@ export async function POST(request: Request) {
       applications: body.applications || [],
       features: body.features || [],
       included: body.included || [],
-      specifications: body.specifications || [],
+      specifications: (body.specifications || []).map(
+        (item: { label: string; value: string }, index: number) => ({
+          _type: "specification",
+          _key: `spec-${Date.now()}-${index}`,
+          ...item,
+        }),
+      ),
       featured: body.featured !== false,
       order: Number(body.order || 99),
     });
+    if (body.imageData) {
+      const match = String(body.imageData).match(/^data:(.*?);base64,(.*)$/);
+      if (match) {
+        const asset = await sanityWrite.assets.upload(
+          "image",
+          Buffer.from(match[2], "base64"),
+          {
+            filename: body.imageName || "product-image",
+            contentType: match[1],
+          },
+        );
+        await sanityWrite
+          .patch(product._id)
+          .set({
+            image: {
+              _type: "image",
+              asset: { _type: "reference", _ref: asset._id },
+            },
+          })
+          .commit();
+      }
+    }
     return NextResponse.json(product, { status: 201 });
   } catch {
     return NextResponse.json(

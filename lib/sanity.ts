@@ -34,6 +34,7 @@ const productProjection = `{
   specifications[]{label, value},
   "image": image.asset->url,
   featured
+  ,order
 }`;
 
 export async function getProducts(): Promise<Product[]> {

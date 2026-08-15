@@ -533,6 +533,49 @@ footer {
   padding-top: 20px;
   border-top: 1px solid var(--line);
 }
+.sales-chart-line {
+  height: auto;
+  min-height: 230px;
+  display: block;
+}
+.sales-chart-line svg {
+  width: 100%;
+  height: 210px;
+  overflow: visible;
+}
+.chart-grid {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.chart-line {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.chart-dot {
+  fill: var(--gold);
+  stroke: #090909;
+  stroke-width: 3;
+}
+.chart-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 10px;
+}
+.admin-checkbox {
+  display: flex !important;
+  align-items: center;
+  gap: 9px !important;
+}
+.admin-checkbox input {
+  min-height: auto;
+  width: 16px;
+  height: 16px;
+}
 .sales-bar-wrap {
   height: 100%;
   flex: 1;
