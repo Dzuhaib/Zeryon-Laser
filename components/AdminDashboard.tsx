@@ -61,7 +61,11 @@ export default function AdminDashboard() {
   );
   const [notice, setNotice] = useState("");
   const [alerts, setAlerts] = useState(false);
-  const previousNewOrders = useRef(0);
+  const previousNewOrders = useRef<number | null>(null);
+  const audioContext = useRef<AudioContext | null>(null);
+  useEffect(() => {
+    setAlerts(localStorage.getItem("zeryon-order-alerts") === "enabled");
+  }, []);
   const load = async () => {
     const now = Date.now();
     const from =
@@ -82,19 +86,44 @@ export default function AdminDashboard() {
     const newOrders =
       data?.orders.filter((order) => order.status === "new").length || 0;
     if (
+      previousNewOrders.current !== null &&
       alerts &&
-      previousNewOrders.current &&
       newOrders > previousNewOrders.current
     ) {
-      const context = new AudioContext();
+      const context = audioContext.current || new AudioContext();
+      audioContext.current = context;
+      if (context.state === "suspended") void context.resume();
       const oscillator = context.createOscillator();
-      oscillator.connect(context.destination);
+      const gain = context.createGain();
+      gain.gain.value = 0.16;
+      oscillator.connect(gain);
+      gain.connect(context.destination);
       oscillator.frequency.value = 880;
       oscillator.start();
       oscillator.stop(context.currentTime + 0.18);
     }
     previousNewOrders.current = newOrders;
   }, [data, alerts]);
+  function toggleAlerts() {
+    const enabled = !alerts;
+    setAlerts(enabled);
+    localStorage.setItem(
+      "zeryon-order-alerts",
+      enabled ? "enabled" : "disabled",
+    );
+    if (enabled) {
+      const context = audioContext.current || new AudioContext();
+      audioContext.current = context;
+      void context.resume();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      gain.gain.value = 0.001;
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.03);
+    }
+  }
   const sales =
     data?.orders
       .filter((order) => order.status !== "cancelled")
@@ -211,9 +240,9 @@ export default function AdminDashboard() {
             </h1>
           </div>
           <div className="admin-head-actions">
-            <button className="text-button" onClick={() => setAlerts(true)}>
+            <button className="text-button" onClick={toggleAlerts}>
               <BellRing size={16} />
-              {alerts ? "Alerts enabled" : "Enable alerts"}
+              {alerts ? "Order sound on" : "Enable order sound"}
             </button>
             <select
               value={range}
