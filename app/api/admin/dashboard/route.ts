@@ -32,6 +32,7 @@ export async function GET(request: Request) {
     }
     const salesByDay = orders.reduce(
       (result: Record<string, number>, order: any) => {
+        if (order.status === "cancelled") return result;
         const day = String(order.createdAt || "").slice(0, 10);
         result[day] = (result[day] || 0) + Number(order.total || 0);
         return result;

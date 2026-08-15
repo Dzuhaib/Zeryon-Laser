@@ -96,14 +96,18 @@ export default function AdminDashboard() {
     previousNewOrders.current = newOrders;
   }, [data, alerts]);
   const sales =
-    data?.orders.reduce((sum, order) => sum + Number(order.total || 0), 0) || 0;
+    data?.orders
+      .filter((order) => order.status !== "cancelled")
+      .reduce((sum, order) => sum + Number(order.total || 0), 0) || 0;
   const topProducts = useMemo(() => {
     const counts: Record<string, number> = {};
-    data?.orders.forEach((order) =>
-      order.items?.forEach((item) => {
-        counts[item.name] = (counts[item.name] || 0) + item.quantity;
-      }),
-    );
+    data?.orders
+      .filter((order) => order.status !== "cancelled")
+      .forEach((order) =>
+        order.items?.forEach((item) => {
+          counts[item.name] = (counts[item.name] || 0) + item.quantity;
+        }),
+      );
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5);
