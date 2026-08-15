@@ -39,7 +39,7 @@ export function ZeryonSignIn() {
         routing="path"
         path="/sign-in"
         signUpUrl="/sign-up"
-        forceRedirectUrl="/account"
+        forceRedirectUrl="/post-sign-in"
         appearance={clerkAppearance}
       />
       <p className="auth-switch">
@@ -56,7 +56,7 @@ export function ZeryonSignUp() {
         routing="path"
         path="/sign-up"
         signInUrl="/sign-in"
-        forceRedirectUrl="/account"
+        forceRedirectUrl="/post-sign-in"
         appearance={clerkAppearance}
       />
       <p className="auth-switch">
