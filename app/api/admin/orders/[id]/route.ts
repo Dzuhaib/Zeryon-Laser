@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { sanityWrite } from "@/lib/sanity";
 import { requireAdmin } from "@/lib/admin";
 import { requireSameOrigin } from "@/lib/request-security";
+import { writeAdminAudit } from "@/lib/audit";
 
 export async function PATCH(
   request: Request,
@@ -10,7 +11,7 @@ export async function PATCH(
 ) {
   try {
     requireSameOrigin(request);
-    await requireAdmin();
+    const adminId = await requireAdmin();
     if (!sanityWrite) throw new Error();
     const { id } = await params;
     const { status } = await request.json();
@@ -30,6 +31,13 @@ export async function PATCH(
     if (!order)
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     const updated = await sanityWrite.patch(id).set({ status }).commit();
+    await writeAdminAudit({
+      request,
+      adminId,
+      action: "order.status_updated",
+      targetId: id,
+      details: { from: order.status, to: status },
+    });
     if (process.env.RESEND_API_KEY && order.customer?.email) {
       const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({

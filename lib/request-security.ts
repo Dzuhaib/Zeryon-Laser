@@ -1,4 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { createHmac } from "node:crypto";
 
 export function requireSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
@@ -34,4 +35,17 @@ export function escapeHtml(value: unknown) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+export function getClientFingerprint(request: Request) {
+  const forwarded = request.headers
+    .get("x-forwarded-for")
+    ?.split(",")[0]
+    ?.trim();
+  const address = forwarded || request.headers.get("x-real-ip") || "unknown";
+  const key =
+    process.env.RATE_LIMIT_SECRET ||
+    process.env.SANITY_API_WRITE_TOKEN ||
+    "zeryon-rate-limit";
+  return createHmac("sha256", key).update(address).digest("hex");
 }

@@ -5,6 +5,7 @@ import { calculateVat } from "@/lib/vat";
 import {
   cleanText,
   escapeHtml,
+  getClientFingerprint,
   requireAuthenticatedUser,
 } from "@/lib/request-security";
 
@@ -25,9 +26,10 @@ export async function POST(request: Request) {
       );
 
     const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const clientFingerprint = getClientFingerprint(request);
     const recentOrders = await sanityWrite.fetch<number>(
-      `count(*[_type == "order" && userId == $userId && createdAt >= $since])`,
-      { userId: identity.userId, since },
+      `count(*[_type == "order" && createdAt >= $since && (userId == $userId || clientFingerprint == $clientFingerprint)])`,
+      { userId: identity.userId, clientFingerprint, since },
     );
     if (recentOrders >= 5)
       return NextResponse.json(
@@ -79,6 +81,7 @@ export async function POST(request: Request) {
       status: "new",
       createdAt: new Date().toISOString(),
       userId: identity.userId,
+      clientFingerprint,
       customer,
       items,
       subtotal,

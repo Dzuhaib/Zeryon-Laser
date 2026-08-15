@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { sanityWrite } from "@/lib/sanity";
 import { requireAdmin } from "@/lib/admin";
 import { requireSameOrigin } from "@/lib/request-security";
+import { writeAdminAudit } from "@/lib/audit";
 
 export async function PATCH(
   request: Request,
@@ -9,7 +10,7 @@ export async function PATCH(
 ) {
   try {
     requireSameOrigin(request);
-    await requireAdmin();
+    const adminId = await requireAdmin();
     if (!sanityWrite) throw new Error();
     const { id } = await params;
     const body = await request.json();
@@ -73,6 +74,16 @@ export async function PATCH(
         })
         .commit();
     }
+    await writeAdminAudit({
+      request,
+      adminId,
+      action: "product.updated",
+      targetId: id,
+      details: {
+        fields: Object.keys(fields),
+        imageUpdated: Boolean(imageMatch),
+      },
+    });
     return NextResponse.json(updated);
   } catch {
     return NextResponse.json(
@@ -88,10 +99,21 @@ export async function DELETE(
 ) {
   try {
     requireSameOrigin(request);
-    await requireAdmin();
+    const adminId = await requireAdmin();
     if (!sanityWrite) throw new Error();
     const { id } = await params;
+    const product = await sanityWrite.fetch<{ name?: string } | null>(
+      `*[_type == "product" && _id == $id][0]{name}`,
+      { id },
+    );
     await sanityWrite.delete(id);
+    await writeAdminAudit({
+      request,
+      adminId,
+      action: "product.deleted",
+      targetId: id,
+      details: { name: product?.name || "Unknown" },
+    });
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(

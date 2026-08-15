@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getProducts, sanityWrite } from "@/lib/sanity";
 import { requireAdmin } from "@/lib/admin";
 import { requireSameOrigin } from "@/lib/request-security";
+import { writeAdminAudit } from "@/lib/audit";
 
 export async function GET() {
   try {
@@ -15,7 +16,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     requireSameOrigin(request);
-    await requireAdmin();
+    const adminId = await requireAdmin();
     if (!sanityWrite)
       return NextResponse.json(
         { error: "Sanity write client is not configured" },
@@ -80,6 +81,13 @@ export async function POST(request: Request) {
         })
         .commit();
     }
+    await writeAdminAudit({
+      request,
+      adminId,
+      action: "product.created",
+      targetId: product._id,
+      details: { name: product.name },
+    });
     return NextResponse.json(product, { status: 201 });
   } catch {
     return NextResponse.json(

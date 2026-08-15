@@ -75,16 +75,17 @@ export type CustomerOrder = {
 };
 
 export async function getCustomerOrders(
+  userId: string,
   email: string,
 ): Promise<CustomerOrder[]> {
-  if (!sanityWrite || !email) return [];
+  if (!sanityWrite || !userId) return [];
   try {
     return await sanityWrite.fetch<CustomerOrder[]>(
-      `*[_type == "order" && lower(customer.email) == lower($email)] | order(createdAt desc) {
+      `*[_type == "order" && (userId == $userId || (!defined(userId) && lower(customer.email) == lower($email)))] | order(createdAt desc) {
         _id, orderNumber, status, createdAt, subtotal, vat, total,
         items[]{name, quantity, price}
       }`,
-      { email },
+      { userId, email },
     );
   } catch (error) {
     console.error("Unable to fetch customer orders", error);

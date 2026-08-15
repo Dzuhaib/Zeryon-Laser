@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { getProducts, sanityWrite } from "@/lib/sanity";
-import { requireAuthenticatedUser } from "@/lib/request-security";
+import {
+  getClientFingerprint,
+  requireAuthenticatedUser,
+} from "@/lib/request-security";
 
 export async function POST(request: Request) {
   try {
@@ -23,9 +26,10 @@ export async function POST(request: Request) {
     if (!product)
       return NextResponse.json({ error: "Unknown product" }, { status: 400 });
     const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const clientFingerprint = getClientFingerprint(request);
     const recentEvents = await sanityWrite.fetch<number>(
-      `count(*[_type == "storeEvent" && userId == $userId && createdAt >= $since])`,
-      { userId: identity.userId, since },
+      `count(*[_type == "storeEvent" && createdAt >= $since && (userId == $userId || clientFingerprint == $clientFingerprint)])`,
+      { userId: identity.userId, clientFingerprint, since },
     );
     if (recentEvents >= 100)
       return NextResponse.json(
@@ -40,6 +44,7 @@ export async function POST(request: Request) {
       productId: product._id,
       productName: product.name,
       userId: identity.userId,
+      clientFingerprint,
       customerEmail: identity.email,
     });
     return NextResponse.json({ ok: true });

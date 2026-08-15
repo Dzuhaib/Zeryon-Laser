@@ -5,6 +5,7 @@ import { AddToCart } from "@/components/AddToCart";
 import { ProductSectionNav } from "@/components/ProductSectionNav";
 import Link from "next/link";
 import { ProductViewTracker } from "@/components/ProductViewTracker";
+import Image from "next/image";
 export async function generateStaticParams() {
   return (await getProducts()).map((p) => ({ slug: p.slug }));
 }
@@ -22,7 +23,13 @@ export default async function Machine({
       <section className="product-hero">
         <div className="product-hero-visual">
           {p.image ? (
-            <img src={p.image} alt={p.name} />
+            <Image
+              src={p.image}
+              alt={p.name}
+              width={1200}
+              height={1000}
+              priority
+            />
           ) : (
             <div className="machine-art large">
               <i />

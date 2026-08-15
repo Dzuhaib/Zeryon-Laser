@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useCart } from "@/components/CartProvider";
 import { money } from "@/lib/money";
+import Image from "next/image";
 export default function Cart() {
   const { items, remove, setQuantity, total } = useCart();
   return (
@@ -22,7 +23,12 @@ export default function Cart() {
               <article className="cart-row" key={i.product._id}>
                 <div className="cart-thumb">
                   {i.product.image ? (
-                    <img src={i.product.image} alt={i.product.name} />
+                    <Image
+                      src={i.product.image}
+                      alt={i.product.name}
+                      width={180}
+                      height={180}
+                    />
                   ) : (
                     <span>Z</span>
                   )}

@@ -13,8 +13,27 @@ const Cart = createContext<C | null>(null);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   useEffect(() => {
-    const v = localStorage.getItem("lbl-cart");
-    if (v) setItems(JSON.parse(v));
+    try {
+      const stored = JSON.parse(localStorage.getItem("lbl-cart") || "[]");
+      if (!Array.isArray(stored)) return;
+      setItems(
+        stored
+          .filter(
+            (item): item is CartItem =>
+              typeof item?.product?._id === "string" &&
+              typeof item?.product?.name === "string" &&
+              Number.isFinite(Number(item?.product?.price)) &&
+              Number.isFinite(Number(item?.quantity)),
+          )
+          .slice(0, 20)
+          .map((item) => ({
+            ...item,
+            quantity: Math.min(10, Math.max(1, Math.floor(item.quantity))),
+          })),
+      );
+    } catch {
+      localStorage.removeItem("lbl-cart");
+    }
   }, []);
   useEffect(() => {
     localStorage.setItem("lbl-cart", JSON.stringify(items));
@@ -24,7 +43,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       v.some((i) => i.product._id === product._id)
         ? v.map((i) =>
             i.product._id === product._id
-              ? { ...i, quantity: i.quantity + 1 }
+              ? { ...i, quantity: Math.min(10, i.quantity + 1) }
               : i,
           )
         : [...v, { product, quantity: 1 }],
@@ -45,7 +64,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const setQuantity = (id: string, q: number) =>
     setItems((v) =>
       v.map((i) =>
-        i.product._id === id ? { ...i, quantity: Math.max(1, q) } : i,
+        i.product._id === id
+          ? { ...i, quantity: Math.min(10, Math.max(1, q)) }
+          : i,
       ),
     );
   return (

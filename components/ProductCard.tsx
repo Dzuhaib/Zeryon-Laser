@@ -4,6 +4,7 @@ import { ArrowUpRight, Plus } from "lucide-react";
 import { Product } from "@/lib/types";
 import { money } from "@/lib/money";
 import { useCart } from "./CartProvider";
+import Image from "next/image";
 export function ProductCard({
   product,
   index = 1,
@@ -16,7 +17,12 @@ export function ProductCard({
     <article className="product-card">
       <Link href={`/machines/${product.slug}`} className="product-visual">
         {product.image ? (
-          <img src={product.image} alt={product.name} />
+          <Image
+            src={product.image}
+            alt={product.name}
+            width={700}
+            height={700}
+          />
         ) : (
           <div className="machine-art">
             <i />

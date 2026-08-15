@@ -13,7 +13,7 @@ export default async function AccountPage({
   const { account = [] } = await params;
   const view = account[0] || "overview";
   const email = user?.primaryEmailAddress?.emailAddress || "";
-  const orders = await getCustomerOrders(email);
+  const orders = await getCustomerOrders(user?.id || "", email);
   const firstName = user?.firstName || "Customer";
   const totalSpent = orders.reduce((sum, order) => sum + (order.total || 0), 0);
 
