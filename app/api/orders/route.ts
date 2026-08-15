@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { getProducts, sanity } from "@/lib/sanity";
+import { getProducts, sanityWrite } from "@/lib/sanity";
 import { calculateVat } from "@/lib/vat";
 export async function POST(req: Request) {
   try {
@@ -42,8 +42,7 @@ export async function POST(req: Request) {
       vat,
       total,
     };
-    if (sanity && process.env.SANITY_API_WRITE_TOKEN)
-      await sanity.create(order);
+    if (sanityWrite) await sanityWrite.create(order);
     const key = process.env.RESEND_API_KEY;
     if (key) {
       const resend = new Resend(key);

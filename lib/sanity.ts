@@ -1,7 +1,63 @@
-import {createClient} from '@sanity/client';
-import {fallbackProducts} from './products';
-import {Product} from './types';
-const projectId=process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
-export const sanity=projectId?createClient({projectId,dataset:process.env.NEXT_PUBLIC_SANITY_DATASET||'production',apiVersion:'2025-01-01',useCdn:true,token:process.env.SANITY_API_WRITE_TOKEN}):null;
-export async function getProducts():Promise<Product[]>{if(!sanity)return fallbackProducts;try{return await sanity.fetch(`*[_type == "product"]|order(order asc){_id,name,"slug":slug.current,category,price,summary,description,applications,features,included,specifications,"image":image.asset->url,featured}`)}catch{return fallbackProducts}}
-export async function getProduct(slug:string){return (await getProducts()).find(p=>p.slug===slug)}
+import { createClient } from "@sanity/client";
+import { fallbackProducts } from "./products";
+import type { Product } from "./types";
+
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "4kxmr9b8";
+const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
+
+export const sanity = createClient({
+  projectId,
+  dataset,
+  apiVersion: "2026-08-15",
+  useCdn: true,
+  perspective: "published",
+});
+
+export const sanityWrite = process.env.SANITY_API_WRITE_TOKEN
+  ? sanity.withConfig({
+      token: process.env.SANITY_API_WRITE_TOKEN,
+      useCdn: false,
+    })
+  : null;
+
+const productProjection = `{
+  _id,
+  name,
+  "slug": slug.current,
+  category,
+  price,
+  summary,
+  description,
+  applications,
+  features,
+  included,
+  specifications[]{label, value},
+  "image": image.asset->url,
+  featured
+}`;
+
+export async function getProducts(): Promise<Product[]> {
+  try {
+    return await sanity.fetch<Product[]>(
+      `*[_type == "product" && defined(slug.current)] | order(order asc) ${productProjection}`,
+      {},
+      { next: { revalidate: 60 } },
+    );
+  } catch (error) {
+    console.error("Unable to fetch products from Sanity", error);
+    return fallbackProducts;
+  }
+}
+
+export async function getProduct(slug: string): Promise<Product | null> {
+  try {
+    return await sanity.fetch<Product | null>(
+      `*[_type == "product" && slug.current == $slug][0] ${productProjection}`,
+      { slug },
+      { next: { revalidate: 60 } },
+    );
+  } catch (error) {
+    console.error(`Unable to fetch ${slug} from Sanity`, error);
+    return fallbackProducts.find((product) => product.slug === slug) || null;
+  }
+}
