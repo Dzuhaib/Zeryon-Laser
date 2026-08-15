@@ -3,10 +3,13 @@ import Link from "next/link";
 import { Menu, ShoppingBag, X } from "lucide-react";
 import { Show, UserButton } from "@clerk/nextjs";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useCart } from "./CartProvider";
 export function Header({ clerkEnabled = false }: { clerkEnabled?: boolean }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
   const { count } = useCart();
+  if (pathname.startsWith("/admin")) return null;
   return (
     <header className="header">
       <Link href="/" className="wordmark">

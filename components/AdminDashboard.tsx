@@ -2,6 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { money } from "@/lib/money";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  BellRing,
+  Boxes,
+  LayoutDashboard,
+  ShoppingCart,
+} from "lucide-react";
 
 type Product = {
   _id: string;
@@ -131,236 +139,256 @@ export default function AdminDashboard() {
 
   if (!data)
     return (
-      <section className="admin-dashboard">
-        <p className="eyebrow">ZERYON operations</p>
-        <h1>Loading dashboard.</h1>
+      <section className="admin-loading">
+        <span className="admin-brand-mark">Z</span>
+        <p>Loading ZERYON dashboard...</p>
       </section>
     );
   return (
-    <section className="admin-dashboard">
-      <header className="admin-dashboard-head">
-        <div>
-          <p className="eyebrow">ZERYON operations</p>
-          <h1>Store dashboard.</h1>
-          <p>
-            Monitor sales, customers, products and fulfilment from one place.
-          </p>
-        </div>
-        <div className="admin-head-actions">
-          <button className="text-button" onClick={() => setAlerts(true)}>
-            {alerts ? "Order alerts enabled" : "Enable order sound"}
-          </button>
-          <select
-            value={range}
-            onChange={(event) => setRange(event.target.value)}
+    <section className="admin-shell">
+      <aside className="admin-sidebar">
+        <Link href="/admin" className="admin-brand">
+          <span className="admin-brand-mark">Z</span>
+          <span>
+            <strong>ZERYON</strong>
+            <small>Admin console</small>
+          </span>
+        </Link>
+        <nav className="admin-tabs" aria-label="Dashboard navigation">
+          <button
+            className={tab === "overview" ? "active" : ""}
+            onClick={() => setTab("overview")}
           >
-            <option value="7">Last 7 days</option>
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
-            <option value="all">All time</option>
-          </select>
-        </div>
-      </header>
-      {notice && <p className="admin-notice">{notice}</p>}
-      <nav className="admin-tabs">
-        <button
-          className={tab === "overview" ? "active" : ""}
-          onClick={() => setTab("overview")}
-        >
-          Overview
-        </button>
-        <button
-          className={tab === "orders" ? "active" : ""}
-          onClick={() => setTab("orders")}
-        >
-          Orders{" "}
-          <b>{data.orders.filter((order) => order.status === "new").length}</b>
-        </button>
-        <button
-          className={tab === "products" ? "active" : ""}
-          onClick={() => setTab("products")}
-        >
-          Products
-        </button>
-      </nav>
-      {tab === "overview" && (
-        <>
-          <div className="admin-metrics">
-            <article>
-              <span>Sales</span>
-              <strong>{money(sales)}</strong>
-            </article>
-            <article>
-              <span>Orders</span>
-              <strong>{data.orders.length}</strong>
-            </article>
-            <article>
-              <span>Customers</span>
-              <strong>{data.users}</strong>
-            </article>
-            <article>
-              <span>Products</span>
-              <strong>{data.products.length}</strong>
-            </article>
+            <LayoutDashboard size={18} /> Overview
+          </button>
+          <button
+            className={tab === "orders" ? "active" : ""}
+            onClick={() => setTab("orders")}
+          >
+            <ShoppingCart size={18} /> Orders
+            <b>
+              {data.orders.filter((order) => order.status === "new").length}
+            </b>
+          </button>
+          <button
+            className={tab === "products" ? "active" : ""}
+            onClick={() => setTab("products")}
+          >
+            <Boxes size={18} /> Products
+          </button>
+        </nav>
+        <Link href="/" className="admin-back-link">
+          <ArrowLeft size={17} /> Back to website
+        </Link>
+      </aside>
+      <div className="admin-workspace">
+        <header className="admin-dashboard-head">
+          <div>
+            <p className="eyebrow">Store operations</p>
+            <h1>
+              {tab === "overview"
+                ? "Dashboard"
+                : tab === "orders"
+                  ? "Orders"
+                  : "Products"}
+            </h1>
           </div>
-          <div className="admin-dashboard-grid">
-            <article className="admin-panel sales-panel">
-              <div className="admin-panel-head">
-                <div>
-                  <p className="eyebrow">Performance</p>
-                  <h2>Sales over time</h2>
+          <div className="admin-head-actions">
+            <button className="text-button" onClick={() => setAlerts(true)}>
+              <BellRing size={16} />
+              {alerts ? "Alerts enabled" : "Enable alerts"}
+            </button>
+            <select
+              value={range}
+              onChange={(event) => setRange(event.target.value)}
+            >
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="all">All time</option>
+            </select>
+          </div>
+        </header>
+        {notice && <p className="admin-notice">{notice}</p>}
+        {tab === "overview" && (
+          <>
+            <div className="admin-metrics">
+              <article>
+                <span>Sales</span>
+                <strong>{money(sales)}</strong>
+              </article>
+              <article>
+                <span>Orders</span>
+                <strong>{data.orders.length}</strong>
+              </article>
+              <article>
+                <span>Customers</span>
+                <strong>{data.users}</strong>
+              </article>
+              <article>
+                <span>Products</span>
+                <strong>{data.products.length}</strong>
+              </article>
+            </div>
+            <div className="admin-dashboard-grid">
+              <article className="admin-panel sales-panel">
+                <div className="admin-panel-head">
+                  <div>
+                    <p className="eyebrow">Performance</p>
+                    <h2>Sales over time</h2>
+                  </div>
+                  <span>
+                    {range === "all" ? "All time" : `Last ${range} days`}
+                  </span>
                 </div>
-                <span>
-                  {range === "all" ? "All time" : `Last ${range} days`}
-                </span>
-              </div>
-              <div className="sales-chart">
-                {chart.length ? (
-                  chart.map(([day, value]) => (
-                    <div className="sales-bar-wrap" key={day}>
-                      <div
-                        className="sales-bar"
-                        style={{
-                          height: `${Math.max(5, (value / max) * 100)}%`,
-                        }}
-                        title={`${day}: ${money(value)}`}
-                      />
-                      <small>{day.slice(5)}</small>
-                    </div>
-                  ))
+                <div className="sales-chart">
+                  {chart.length ? (
+                    chart.map(([day, value]) => (
+                      <div className="sales-bar-wrap" key={day}>
+                        <div
+                          className="sales-bar"
+                          style={{
+                            height: `${Math.max(5, (value / max) * 100)}%`,
+                          }}
+                          title={`${day}: ${money(value)}`}
+                        />
+                        <small>{day.slice(5)}</small>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="muted">
+                      Sales will appear here after the first order.
+                    </p>
+                  )}
+                </div>
+              </article>
+              <article className="admin-panel">
+                <div className="admin-panel-head">
+                  <div>
+                    <p className="eyebrow">Product performance</p>
+                    <h2>Top sellers</h2>
+                  </div>
+                </div>
+                {topProducts.length ? (
+                  <ol className="top-products">
+                    {topProducts.map(([name, count]) => (
+                      <li key={name}>
+                        <span>{name}</span>
+                        <strong>{count} sold</strong>
+                      </li>
+                    ))}
+                  </ol>
                 ) : (
-                  <p className="muted">
-                    Sales will appear here after the first order.
-                  </p>
+                  <p className="muted">No product sales yet.</p>
                 )}
-              </div>
-            </article>
+              </article>
+            </div>
+          </>
+        )}
+        {tab === "overview" && (
+          <div className="admin-insights">
             <article className="admin-panel">
               <div className="admin-panel-head">
                 <div>
-                  <p className="eyebrow">Product performance</p>
-                  <h2>Top sellers</h2>
+                  <p className="eyebrow">Attention</p>
+                  <h2>Most viewed</h2>
                 </div>
               </div>
-              {topProducts.length ? (
+              {views.length ? (
                 <ol className="top-products">
-                  {topProducts.map(([name, count]) => (
+                  {views.map(([name, count]) => (
                     <li key={name}>
                       <span>{name}</span>
-                      <strong>{count} sold</strong>
+                      <strong>{count} views</strong>
                     </li>
                   ))}
                 </ol>
               ) : (
-                <p className="muted">No product sales yet.</p>
+                <p className="muted">Product views will appear here.</p>
+              )}
+            </article>
+            <article className="admin-panel">
+              <div className="admin-panel-head">
+                <div>
+                  <p className="eyebrow">Cart activity</p>
+                  <h2>Recently added</h2>
+                </div>
+              </div>
+              {cartEvents.length ? (
+                <div className="cart-activity">
+                  {cartEvents.map((event) => (
+                    <div key={event._id}>
+                      <span>{event.productName}</span>
+                      <small>{event.customerEmail || "Guest customer"}</small>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="muted">Cart activity will appear here.</p>
               )}
             </article>
           </div>
-        </>
-      )}
-      {tab === "overview" && (
-        <div className="admin-insights">
-          <article className="admin-panel">
+        )}
+        {tab === "orders" && (
+          <div className="admin-panel admin-orders">
             <div className="admin-panel-head">
               <div>
-                <p className="eyebrow">Attention</p>
-                <h2>Most viewed</h2>
+                <p className="eyebrow">Fulfilment</p>
+                <h2>New and recent orders</h2>
               </div>
+              <button className="button small" onClick={load}>
+                Refresh
+              </button>
             </div>
-            {views.length ? (
-              <ol className="top-products">
-                {views.map(([name, count]) => (
-                  <li key={name}>
-                    <span>{name}</span>
-                    <strong>{count} views</strong>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="muted">Product views will appear here.</p>
-            )}
-          </article>
-          <article className="admin-panel">
-            <div className="admin-panel-head">
-              <div>
-                <p className="eyebrow">Cart activity</p>
-                <h2>Recently added</h2>
-              </div>
-            </div>
-            {cartEvents.length ? (
-              <div className="cart-activity">
-                {cartEvents.map((event) => (
-                  <div key={event._id}>
-                    <span>{event.productName}</span>
-                    <small>{event.customerEmail || "Guest customer"}</small>
+            {data.orders.length ? (
+              data.orders.map((order) => (
+                <article className="admin-order" key={order._id}>
+                  <div>
+                    <strong>{order.orderNumber}</strong>
+                    <small>
+                      {order.customer?.firstName} {order.customer?.lastName} ·{" "}
+                      {order.customer?.email}
+                    </small>
+                    <small>
+                      {new Date(order.createdAt).toLocaleString("en-GB")}
+                    </small>
                   </div>
-                ))}
-              </div>
+                  <span>
+                    {order.items
+                      ?.map((item) => `${item.quantity} × ${item.name}`)
+                      .join(", ")}
+                  </span>
+                  <strong>{money(order.total)}</strong>
+                  <select
+                    value={order.status}
+                    onChange={(event) =>
+                      updateOrder(order._id, event.target.value)
+                    }
+                  >
+                    <option>new</option>
+                    <option>contacted</option>
+                    <option>confirmed</option>
+                    <option>fulfilled</option>
+                    <option>cancelled</option>
+                  </select>
+                </article>
+              ))
             ) : (
-              <p className="muted">Cart activity will appear here.</p>
+              <p className="muted">No orders in this period.</p>
             )}
-          </article>
-        </div>
-      )}
-      {tab === "orders" && (
-        <div className="admin-panel admin-orders">
-          <div className="admin-panel-head">
-            <div>
-              <p className="eyebrow">Fulfilment</p>
-              <h2>New and recent orders</h2>
-            </div>
-            <button className="button small" onClick={load}>
-              Refresh
-            </button>
           </div>
-          {data.orders.length ? (
-            data.orders.map((order) => (
-              <article className="admin-order" key={order._id}>
-                <div>
-                  <strong>{order.orderNumber}</strong>
-                  <small>
-                    {order.customer?.firstName} {order.customer?.lastName} ·{" "}
-                    {order.customer?.email}
-                  </small>
-                  <small>
-                    {new Date(order.createdAt).toLocaleString("en-GB")}
-                  </small>
-                </div>
-                <span>
-                  {order.items
-                    ?.map((item) => `${item.quantity} × ${item.name}`)
-                    .join(", ")}
-                </span>
-                <strong>{money(order.total)}</strong>
-                <select
-                  value={order.status}
-                  onChange={(event) =>
-                    updateOrder(order._id, event.target.value)
-                  }
-                >
-                  <option>new</option>
-                  <option>contacted</option>
-                  <option>confirmed</option>
-                  <option>fulfilled</option>
-                  <option>cancelled</option>
-                </select>
-              </article>
-            ))
-          ) : (
-            <p className="muted">No orders in this period.</p>
-          )}
-        </div>
-      )}
-      {tab === "products" && (
-        <ProductManager
-          products={data.products}
-          onDelete={deleteProduct}
-          onCreated={() => {
-            setNotice("Product created in Sanity.");
-            load();
-          }}
-        />
-      )}
+        )}
+        {tab === "products" && (
+          <ProductManager
+            products={data.products}
+            onDelete={deleteProduct}
+            onCreated={() => {
+              setNotice("Product created in Sanity.");
+              load();
+            }}
+          />
+        )}
+      </div>
     </section>
   );
 }
