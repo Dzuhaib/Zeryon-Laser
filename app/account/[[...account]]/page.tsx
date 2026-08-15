@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
-import { ZeryonUserProfile } from "@/components/ClerkAuth";
+import { CustomerAddressForm, ZeryonUserProfile } from "@/components/ClerkAuth";
 import { getCustomerOrders } from "@/lib/sanity";
 import { money } from "@/lib/money";
 
@@ -103,6 +103,27 @@ export default async function AccountPage({
                   </Link>
                 </article>
               </div>
+              <article className="account-block account-address-block">
+                <div className="account-section-head">
+                  <p className="eyebrow">Checkout details</p>
+                  <h2>Saved delivery address</h2>
+                  <p>
+                    Keep your details ready for future equipment and training
+                    orders.
+                  </p>
+                </div>
+                <CustomerAddressForm
+                  initialAddress={
+                    (user?.unsafeMetadata?.address as {
+                      line1?: string;
+                      line2?: string;
+                      city?: string;
+                      postcode?: string;
+                      country?: string;
+                    }) || undefined
+                  }
+                />
+              </article>
             </>
           )}
         </div>

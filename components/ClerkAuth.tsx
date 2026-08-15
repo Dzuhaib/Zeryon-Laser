@@ -1,7 +1,8 @@
 "use client";
 
-import { SignIn, SignUp, UserProfile } from "@clerk/nextjs";
+import { SignIn, SignUp, UserProfile, useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { FormEvent, useState } from "react";
 
 export const clerkAppearance = {
   variables: {
@@ -22,6 +23,9 @@ export const clerkAppearance = {
     footer: "clerk-hidden",
     footerAction: "clerk-hidden",
     footerPages: "clerk-hidden",
+    developmentMode: "clerk-hidden",
+    developmentModeBadge: "clerk-hidden",
+    poweredBy: "clerk-hidden",
     socialButtonsBlockButton: "clerk-social-button",
     formButtonPrimary: "clerk-primary-button",
     formFieldInput: "clerk-input",
@@ -69,6 +73,120 @@ export function ZeryonUserProfile() {
       path="/account/profile"
       appearance={clerkAppearance}
     />
+  );
+}
+
+type Address = {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  postcode?: string;
+  country?: string;
+};
+
+export function CustomerAddressForm({
+  initialAddress,
+}: {
+  initialAddress?: Address;
+}) {
+  const { user, isLoaded } = useUser();
+  const [address, setAddress] = useState<Address>(initialAddress || {});
+  const [state, setState] = useState<"idle" | "saving" | "saved" | "error">(
+    "idle",
+  );
+
+  if (!isLoaded) return <p className="muted">Loading your saved address...</p>;
+
+  async function saveAddress(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!user) return;
+    setState("saving");
+    try {
+      await user.update({
+        unsafeMetadata: { ...user.unsafeMetadata, address },
+      });
+      setState("saved");
+    } catch {
+      setState("error");
+    }
+  }
+
+  return (
+    <form className="customer-address-form" onSubmit={saveAddress}>
+      <div className="address-form-grid">
+        <label>
+          Address line 1
+          <input
+            value={address.line1 || ""}
+            onChange={(event) =>
+              setAddress({ ...address, line1: event.target.value })
+            }
+            autoComplete="address-line1"
+            required
+          />
+        </label>
+        <label>
+          Address line 2
+          <input
+            value={address.line2 || ""}
+            onChange={(event) =>
+              setAddress({ ...address, line2: event.target.value })
+            }
+            autoComplete="address-line2"
+          />
+        </label>
+        <label>
+          Town / city
+          <input
+            value={address.city || ""}
+            onChange={(event) =>
+              setAddress({ ...address, city: event.target.value })
+            }
+            autoComplete="address-level2"
+            required
+          />
+        </label>
+        <label>
+          Postcode
+          <input
+            value={address.postcode || ""}
+            onChange={(event) =>
+              setAddress({ ...address, postcode: event.target.value })
+            }
+            autoComplete="postal-code"
+            required
+          />
+        </label>
+        <label>
+          Country
+          <input
+            value={address.country || "United Kingdom"}
+            onChange={(event) =>
+              setAddress({ ...address, country: event.target.value })
+            }
+            autoComplete="country-name"
+            required
+          />
+        </label>
+      </div>
+      <div className="address-form-actions">
+        <button
+          className="button small"
+          type="submit"
+          disabled={state === "saving"}
+        >
+          {state === "saving" ? "Saving..." : "Save address"}
+        </button>
+        {state === "saved" && (
+          <span className="address-save-status">Address saved</span>
+        )}
+        {state === "error" && (
+          <span className="address-save-status error">
+            Unable to save address
+          </span>
+        )}
+      </div>
+    </form>
   );
 }
 
