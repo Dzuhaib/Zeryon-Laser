@@ -3,7 +3,7 @@
 import { SignIn, SignUp, UserProfile } from "@clerk/nextjs";
 import Link from "next/link";
 
-const appearance = {
+export const clerkAppearance = {
   variables: {
     colorPrimary: "#d4af37",
     colorBackground: "#090909",
@@ -20,6 +20,8 @@ const appearance = {
     headerSubtitle: "clerk-subtitle",
     logoBox: "clerk-hidden",
     footer: "clerk-hidden",
+    footerAction: "clerk-hidden",
+    footerPages: "clerk-hidden",
     socialButtonsBlockButton: "clerk-social-button",
     formButtonPrimary: "clerk-primary-button",
     formFieldInput: "clerk-input",
@@ -34,7 +36,7 @@ export function ZeryonSignIn() {
         path="/sign-in"
         signUpUrl="/sign-up"
         forceRedirectUrl="/account"
-        appearance={appearance}
+        appearance={clerkAppearance}
       />
       <p className="auth-switch">
         New to ZERYON? <Link href="/sign-up">Create an account</Link>
@@ -51,7 +53,7 @@ export function ZeryonSignUp() {
         path="/sign-up"
         signInUrl="/sign-in"
         forceRedirectUrl="/account"
-        appearance={appearance}
+        appearance={clerkAppearance}
       />
       <p className="auth-switch">
         Already registered? <Link href="/sign-in">Sign in</Link>
@@ -62,16 +64,11 @@ export function ZeryonSignUp() {
 
 export function ZeryonUserProfile() {
   return (
-    <section className="account-page">
-      <div className="account-heading">
-        <p className="eyebrow">Your account</p>
-        <h1>Profile & security</h1>
-        <p>
-          Manage your details, email addresses, password and active sessions.
-        </p>
-      </div>
-      <UserProfile routing="path" path="/account" appearance={appearance} />
-    </section>
+    <UserProfile
+      routing="path"
+      path="/account/profile"
+      appearance={clerkAppearance}
+    />
   );
 }
 

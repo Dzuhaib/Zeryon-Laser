@@ -299,6 +299,266 @@ footer {
   }
 }
 
+/* Customer account and final Clerk overrides */
+.cl-rootBox .cl-footer,
+.cl-rootBox .cl-footerAction,
+.cl-rootBox .cl-footerPages,
+.cl-rootBox .cl-logoBox,
+.cl-rootBox .cl-poweredBy,
+.cl-rootBox a[href*="clerk.com"] {
+  display: none !important;
+}
+
+.cl-rootBox,
+.cl-rootBox :is(h1, h2, h3, p, span, label, button, a) {
+  color: var(--text) !important;
+}
+
+.cl-rootBox .cl-formButtonPrimary,
+.cl-rootBox .cl-formButtonPrimary span {
+  color: #080706 !important;
+}
+
+.cl-rootBox .cl-formButtonPrimary {
+  background: var(--gold) !important;
+}
+
+.cl-rootBox .cl-formFieldInput,
+.cl-rootBox .cl-socialButtonsBlockButton,
+.cl-rootBox .cl-profileSection,
+.cl-rootBox .cl-navbar,
+.cl-rootBox .cl-pageScrollBox {
+  border-color: var(--line) !important;
+  background: #090909 !important;
+}
+
+.cl-rootBox .cl-formFieldInput {
+  color: var(--text) !important;
+}
+
+.cl-rootBox .cl-formFieldInput:focus {
+  border-color: var(--gold) !important;
+  box-shadow: none !important;
+}
+
+.cl-rootBox .cl-navbarButton[data-active="true"],
+.cl-rootBox .cl-navbarButton:hover,
+.cl-rootBox a:hover {
+  color: var(--gold) !important;
+}
+
+.customer-account {
+  min-height: 100vh;
+  padding: 145px 7vw 100px;
+  background: #050505;
+}
+
+.customer-account-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 40px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--line);
+}
+
+.customer-account-head h1 {
+  margin: 12px 0 16px;
+  font-size: clamp(3rem, 5vw, 5.2rem);
+  line-height: 1;
+}
+
+.customer-account-head > div > p:last-child,
+.account-section-head > p:last-child,
+.account-contact-card > p {
+  color: var(--muted);
+}
+
+.customer-account-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 5vw;
+  padding-top: 46px;
+}
+
+.account-nav {
+  position: sticky;
+  top: 110px;
+  align-self: start;
+  display: grid;
+  border-top: 1px solid var(--line);
+}
+
+.account-nav a {
+  padding: 18px 4px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.account-nav a:hover,
+.account-nav a.active {
+  color: var(--gold);
+}
+
+.account-content {
+  min-width: 0;
+}
+
+.account-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.account-metrics article {
+  min-height: 150px;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: #090909;
+}
+
+.account-metrics span,
+.customer-order small {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.account-metrics strong {
+  color: var(--gold);
+  font-family: var(--serif);
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  font-weight: 500;
+}
+
+.account-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.7fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.account-block,
+.account-profile-panel {
+  padding: 32px;
+  border: 1px solid var(--line);
+  background: #090909;
+}
+
+.account-section-head {
+  margin-bottom: 28px;
+}
+
+.account-section-head h2 {
+  margin: 8px 0 0;
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+}
+
+.customer-orders {
+  border-top: 1px solid var(--line);
+}
+
+.customer-order {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 0.8fr 0.8fr;
+  gap: 18px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.customer-order > div {
+  display: grid;
+  gap: 7px;
+}
+
+.customer-order ul {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.order-status {
+  color: var(--gold);
+  text-transform: capitalize;
+}
+
+.account-empty {
+  padding: 36px 0 8px;
+  color: var(--muted);
+}
+
+.account-empty .button {
+  margin-top: 18px;
+}
+
+.account-profile-panel .cl-rootBox,
+.account-profile-panel .cl-userProfile-root,
+.account-profile-panel .cl-cardBox {
+  width: 100%;
+  max-width: none;
+}
+
+@media (max-width: 800px) {
+  .customer-account {
+    padding: 115px 5vw 70px;
+  }
+
+  .customer-account-head {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .customer-account-layout {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .account-nav {
+    position: sticky;
+    top: 78px;
+    z-index: 5;
+    display: flex;
+    overflow-x: auto;
+    background: #050505;
+  }
+
+  .account-nav a {
+    flex: 0 0 auto;
+    padding: 16px 18px 16px 0;
+    white-space: nowrap;
+  }
+
+  .account-metrics,
+  .account-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-metrics article {
+    min-height: 120px;
+  }
+
+  .account-block,
+  .account-profile-panel {
+    padding: 22px;
+  }
+
+  .customer-order {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 /* Clerk authentication */
 .clerk-hidden {
   display: none !important;

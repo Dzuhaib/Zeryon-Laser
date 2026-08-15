@@ -40,7 +40,7 @@ export function Header({ clerkEnabled = false }: { clerkEnabled?: boolean }) {
             <Show when="signed-in">
               <UserButton
                 userProfileMode="navigation"
-                userProfileUrl="/account"
+                userProfileUrl="/account/profile"
                 appearance={{ elements: { avatarBox: "zeryon-avatar" } }}
               />
             </Show>
