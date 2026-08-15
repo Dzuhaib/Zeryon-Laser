@@ -153,7 +153,11 @@ export default function AdminDashboard() {
   if (!data)
     return (
       <section className="admin-loading">
-        <span className="admin-brand-mark">Z</span>
+        <img
+          className="admin-loading-logo"
+          src="/ZERYO%20LOGO%20TRANSPARENT.png"
+          alt="ZERYON"
+        />
         <p>Loading ZERYON dashboard...</p>
       </section>
     );
@@ -166,9 +170,6 @@ export default function AdminDashboard() {
             src="/ZERYO%20LOGO%20TRANSPARENT.png"
             alt="ZERYON"
           />
-          <span>
-            <small>Admin console</small>
-          </span>
         </Link>
         <nav className="admin-tabs" aria-label="Dashboard navigation">
           <button

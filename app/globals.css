@@ -406,6 +406,24 @@ footer {
 .admin-loading .admin-brand-mark {
   margin: auto;
 }
+.admin-loading-logo {
+  width: min(220px, 60vw);
+  height: auto;
+  margin: auto;
+  object-fit: contain;
+  animation: admin-logo-pulse 1.4s ease-in-out infinite;
+}
+@keyframes admin-logo-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 .admin-head-actions .text-button {
   display: inline-flex;
   align-items: center;
