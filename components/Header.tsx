@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Menu, ShoppingBag, X } from "lucide-react";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { Show, UserButton } from "@clerk/nextjs";
 import { useState } from "react";
 import { useCart } from "./CartProvider";
 export function Header({ clerkEnabled = false }: { clerkEnabled?: boolean }) {
@@ -29,18 +29,21 @@ export function Header({ clerkEnabled = false }: { clerkEnabled?: boolean }) {
       <div className="header-actions">
         {clerkEnabled && (
           <>
-            <SignedOut>
+            <Show when="signed-out">
               <Link className="account-link" href="/sign-in">
                 Sign in
               </Link>
-            </SignedOut>
-            <SignedIn>
+              <Link className="account-link account-sign-up" href="/sign-up">
+                Create account
+              </Link>
+            </Show>
+            <Show when="signed-in">
               <UserButton
                 userProfileMode="navigation"
                 userProfileUrl="/account"
                 appearance={{ elements: { avatarBox: "zeryon-avatar" } }}
               />
-            </SignedIn>
+            </Show>
           </>
         )}
         <Link
