@@ -1,17 +1,48 @@
 import { NextResponse } from "next/server";
 import { sanityWrite } from "@/lib/sanity";
 import { requireAdmin } from "@/lib/admin";
+import { requireSameOrigin } from "@/lib/request-security";
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    requireSameOrigin(request);
     await requireAdmin();
     if (!sanityWrite) throw new Error();
     const { id } = await params;
     const body = await request.json();
-    const { imageData, imageName, ...fields } = body;
+    const { imageData, imageName } = body;
+    const imageMatch = imageData
+      ? String(imageData).match(/^data:(.*?);base64,(.*)$/)
+      : null;
+    if (
+      imageData &&
+      (!imageMatch ||
+        !["image/jpeg", "image/png", "image/webp"].includes(imageMatch[1]) ||
+        imageMatch[2].length > 8_000_000)
+    )
+      return NextResponse.json(
+        { error: "Image must be JPEG, PNG or WebP and under 6 MB" },
+        { status: 400 },
+      );
+    const fields: Record<string, any> = {};
+    for (const key of [
+      "name",
+      "slug",
+      "category",
+      "price",
+      "summary",
+      "description",
+      "applications",
+      "features",
+      "included",
+      "specifications",
+      "featured",
+      "order",
+    ])
+      if (body[key] !== undefined) fields[key] = body[key];
     if (typeof fields.slug === "string")
       fields.slug = { _type: "slug", current: fields.slug };
     if (Array.isArray(fields.specifications))
@@ -23,27 +54,24 @@ export async function PATCH(
         }),
       );
     let updated = await sanityWrite.patch(id).set(fields).commit();
-    if (imageData) {
-      const match = String(imageData).match(/^data:(.*?);base64,(.*)$/);
-      if (match) {
-        const asset = await sanityWrite.assets.upload(
-          "image",
-          Buffer.from(match[2], "base64"),
-          {
-            filename: imageName || "product-image",
-            contentType: match[1],
+    if (imageMatch) {
+      const asset = await sanityWrite.assets.upload(
+        "image",
+        Buffer.from(imageMatch[2], "base64"),
+        {
+          filename: imageName || "product-image",
+          contentType: imageMatch[1],
+        },
+      );
+      updated = await sanityWrite
+        .patch(id)
+        .set({
+          image: {
+            _type: "image",
+            asset: { _type: "reference", _ref: asset._id },
           },
-        );
-        updated = await sanityWrite
-          .patch(id)
-          .set({
-            image: {
-              _type: "image",
-              asset: { _type: "reference", _ref: asset._id },
-            },
-          })
-          .commit();
-      }
+        })
+        .commit();
     }
     return NextResponse.json(updated);
   } catch {
@@ -55,10 +83,11 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    requireSameOrigin(request);
     await requireAdmin();
     if (!sanityWrite) throw new Error();
     const { id } = await params;

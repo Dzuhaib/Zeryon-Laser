@@ -2,16 +2,27 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { sanityWrite } from "@/lib/sanity";
 import { requireAdmin } from "@/lib/admin";
+import { requireSameOrigin } from "@/lib/request-security";
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    requireSameOrigin(request);
     await requireAdmin();
     if (!sanityWrite) throw new Error();
     const { id } = await params;
     const { status } = await request.json();
+    if (
+      !["new", "contacted", "confirmed", "fulfilled", "cancelled"].includes(
+        status,
+      )
+    )
+      return NextResponse.json(
+        { error: "Invalid order status" },
+        { status: 400 },
+      );
     const order: any = await sanityWrite.fetch(
       `*[_type == "order" && _id == $id][0]`,
       { id },

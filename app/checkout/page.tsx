@@ -28,7 +28,14 @@ export default function Checkout() {
       }),
     });
     const data = await r.json();
-    router.push(`/order-confirmed?order=${data.orderNumber}`);
+    if (!r.ok) {
+      setLoading(false);
+      alert(data.error || "We could not submit your order. Please try again.");
+      return;
+    }
+    router.push(
+      `/order-confirmed?order=${encodeURIComponent(data.orderNumber)}`,
+    );
   }
   return (
     <section className="checkout">

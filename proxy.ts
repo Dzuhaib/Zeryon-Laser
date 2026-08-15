@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 const isProtectedRoute = createRouteMatcher([
   "/checkout(.*)",
@@ -13,7 +14,13 @@ const authenticatedProxy = clerkMiddleware(async (auth, request) => {
 
 export default process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
   ? authenticatedProxy
-  : () => NextResponse.next();
+  : (request: NextRequest) =>
+      isProtectedRoute(request)
+        ? NextResponse.json(
+            { error: "Authentication is unavailable" },
+            { status: 503 },
+          )
+        : NextResponse.next();
 
 export const config = {
   matcher: [
