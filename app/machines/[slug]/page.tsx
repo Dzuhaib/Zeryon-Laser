@@ -4,6 +4,7 @@ import { money } from "@/lib/money";
 import { AddToCart } from "@/components/AddToCart";
 import { ProductSectionNav } from "@/components/ProductSectionNav";
 import Link from "next/link";
+import { ProductViewTracker } from "@/components/ProductViewTracker";
 export async function generateStaticParams() {
   return (await getProducts()).map((p) => ({ slug: p.slug }));
 }
@@ -17,6 +18,7 @@ export default async function Machine({
   if (!p) notFound();
   return (
     <>
+      <ProductViewTracker productId={p._id} productName={p.name} />
       <section className="product-hero">
         <div className="product-hero-visual">
           {p.image ? (
