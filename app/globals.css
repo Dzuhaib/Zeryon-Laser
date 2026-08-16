@@ -2153,6 +2153,13 @@ main {
 .contact .button {
   margin-top: 10px;
 }
+.contact-trap {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+}
 .success {
   border: 1px solid var(--gold);
   padding: 25px;
