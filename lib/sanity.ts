@@ -71,6 +71,7 @@ export type CustomerOrder = {
   subtotal: number;
   vat: number;
   total: number;
+  paymentStatus?: string;
   items: Array<{ name: string; quantity: number; price: number }>;
 };
 
@@ -82,7 +83,7 @@ export async function getCustomerOrders(
   try {
     return await sanityWrite.fetch<CustomerOrder[]>(
       `*[_type == "order" && (userId == $userId || (!defined(userId) && lower(customer.email) == lower($email)))] | order(createdAt desc) {
-        _id, orderNumber, status, createdAt, subtotal, vat, total,
+        _id, orderNumber, status, paymentStatus, createdAt, subtotal, vat, total,
         items[]{name, quantity, price}
       }`,
       { userId, email },

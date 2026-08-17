@@ -15,7 +15,9 @@ export default async function AccountPage({
   const email = user?.primaryEmailAddress?.emailAddress || "";
   const orders = await getCustomerOrders(user?.id || "", email);
   const firstName = user?.firstName || "Customer";
-  const totalSpent = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+  const totalSpent = orders
+    .filter((order) => order.paymentStatus === "paid")
+    .reduce((sum, order) => sum + (order.total || 0), 0);
 
   return (
     <section className="customer-account">

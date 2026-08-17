@@ -1,5 +1,11 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { CartItem, Product } from "@/lib/types";
 type C = {
   items: CartItem[];
@@ -8,6 +14,7 @@ type C = {
   setQuantity: (id: string, q: number) => void;
   count: number;
   total: number;
+  clear: () => void;
 };
 const Cart = createContext<C | null>(null);
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -69,6 +76,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           : i,
       ),
     );
+  const clear = useCallback(() => setItems([]), []);
   return (
     <Cart.Provider
       value={{
@@ -81,6 +89,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           (a, b) => a + (b.product.price || 0) * b.quantity,
           0,
         ),
+        clear,
       }}
     >
       {children}

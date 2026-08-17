@@ -1,90 +1,103 @@
 "use client";
+
 import { useCart } from "@/components/CartProvider";
 import { money } from "@/lib/money";
 import { calculateTotalWithVat, calculateVat } from "@/lib/vat";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-export default function Checkout() {
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+
+function CheckoutForm() {
   const { items, total } = useCart();
-  const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const vat = calculateVat(total);
   const totalWithVat = calculateTotalWithVat(total);
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setLoading(true);
-    const f = new FormData(e.currentTarget);
-    const r = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        customer: Object.fromEntries(f),
-        items: items.map((i) => ({
-          productId: i.product._id,
-          name: i.product.name,
-          price: i.product.price || 0,
-          quantity: i.quantity,
-        })),
-      }),
-    });
-    const data = await r.json();
-    if (!r.ok) {
+    try {
+      const form = new FormData(event.currentTarget);
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          customer: Object.fromEntries(form),
+          items: items.map((item) => ({
+            productId: item.product._id,
+            quantity: item.quantity,
+          })),
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.url)
+        throw new Error(
+          data.error || "We could not start payment. Please try again.",
+        );
+      window.location.assign(data.url);
+    } catch (error) {
       setLoading(false);
-      alert(data.error || "We could not submit your order. Please try again.");
-      return;
+      alert(
+        error instanceof Error
+          ? error.message
+          : "We could not start payment. Please try again.",
+      );
     }
-    router.push(
-      `/order-confirmed?order=${encodeURIComponent(data.orderNumber)}`,
-    );
   }
+
   return (
     <section className="checkout">
       <div>
-        <p className="eyebrow">Secure enquiry checkout</p>
-        <h1>Complete your details.</h1>
+        <p className="eyebrow">Secure Stripe checkout</p>
+        <h1>Complete your order.</h1>
         <p>
-          We’ll receive your order request, confirm equipment configuration and
-          contact you before fulfilment.
+          Enter your details, then pay securely by card through Stripe. We will
+          contact you after payment to confirm configuration and fulfilment.
         </p>
+        {searchParams.get("cancelled") === "1" && (
+          <p className="form-error">
+            Payment was cancelled. Your cart has been kept.
+          </p>
+        )}
       </div>
       <form onSubmit={submit}>
         <div className="form-grid">
           <label>
             First name
-            <input required name="firstName" />
+            <input required name="firstName" maxLength={80} />
           </label>
           <label>
             Last name
-            <input required name="lastName" />
+            <input required name="lastName" maxLength={80} />
           </label>
           <label>
             Email
-            <input required type="email" name="email" />
+            <input required type="email" name="email" maxLength={254} />
           </label>
           <label>
             Phone
-            <input required name="phone" />
+            <input required name="phone" maxLength={40} />
           </label>
           <label className="wide">
             Business
-            <input name="business" />
+            <input name="business" maxLength={120} />
           </label>
           <label className="wide">
             Address
-            <input required name="address" />
+            <input required name="address" maxLength={200} />
           </label>
           <label>
             Town / City
-            <input required name="city" />
+            <input required name="city" maxLength={100} />
           </label>
           <label>
             Postcode
-            <input required name="postcode" />
+            <input required name="postcode" maxLength={20} />
           </label>
         </div>
         <label>
           Order notes
-          <textarea rows={3} name="notes" />
+          <textarea rows={3} name="notes" maxLength={1000} />
         </label>
         <div className="checkout-totals">
           <div>
@@ -101,9 +114,23 @@ export default function Checkout() {
           </div>
         </div>
         <button disabled={loading || !items.length} className="button">
-          {loading ? "Sending…" : "Place order request"}
+          {loading ? "Opening secure payment..." : "Pay securely with Stripe"}
         </button>
       </form>
     </section>
+  );
+}
+
+export default function Checkout() {
+  return (
+    <Suspense
+      fallback={
+        <section className="checkout">
+          <p>Loading checkout...</p>
+        </section>
+      }
+    >
+      <CheckoutForm />
+    </Suspense>
   );
 }

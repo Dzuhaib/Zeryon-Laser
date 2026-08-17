@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
 import { getProducts, sanityWrite } from "@/lib/sanity";
 import { calculateVat } from "@/lib/vat";
+import { getSiteUrl, getStripe } from "@/lib/stripe";
 import {
   cleanText,
-  escapeHtml,
   getClientFingerprint,
   requireAuthenticatedUser,
 } from "@/lib/request-security";
@@ -24,7 +23,6 @@ export async function POST(request: Request) {
         { error: "Order service unavailable" },
         { status: 503 },
       );
-
     const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const clientFingerprint = getClientFingerprint(request);
     const recentOrders = await sanityWrite.fetch<number>(
@@ -33,15 +31,14 @@ export async function POST(request: Request) {
     );
     if (recentOrders >= 5)
       return NextResponse.json(
-        { error: "Too many order attempts. Please try again later." },
+        { error: "Too many checkout attempts. Please try again later." },
         { status: 429 },
       );
-
     const catalogue = await getProducts();
     const items = body.items.map(
       (item: { productId: string; quantity: number }) => {
         const product = catalogue.find((entry) => entry._id === item.productId);
-        if (!product?.price) throw new Error("Unknown product");
+        if (!product?.price) throw new Error("INVALID_INPUT");
         return {
           productId: product._id,
           name: product.name,
@@ -63,7 +60,7 @@ export async function POST(request: Request) {
       ) / 100;
     const vat = calculateVat(subtotal);
     const total = Math.round((subtotal + vat) * 100) / 100;
-    const orderNumber = `ZRY-${Date.now().toString().slice(-8)}`;
+    const orderNumber = `ZRY-${Date.now().toString().slice(-8)}-${crypto.randomUUID().slice(0, 4).toUpperCase()}`;
     const customer = {
       firstName: cleanText(body.customer?.firstName, 80, true),
       lastName: cleanText(body.customer?.lastName, 80, true),
@@ -75,10 +72,11 @@ export async function POST(request: Request) {
       postcode: cleanText(body.customer?.postcode, 20, true),
       notes: cleanText(body.customer?.notes, 1000),
     };
-    await sanityWrite.create({
+    const order = await sanityWrite.create({
       _type: "order",
       orderNumber,
-      status: "new",
+      status: "pending_payment",
+      paymentStatus: "unpaid",
       createdAt: new Date().toISOString(),
       userId: identity.userId,
       clientFingerprint,
@@ -88,36 +86,46 @@ export async function POST(request: Request) {
       vat,
       total,
     });
-
-    const key = process.env.RESEND_API_KEY;
-    if (key) {
-      const resend = new Resend(key);
-      const from =
-        process.env.RESEND_FROM_EMAIL || "ZERYON <onboarding@resend.dev>";
-      const rows = items
-        .map(
-          (item: { quantity: number; name: string }) =>
-            `${item.quantity} × ${escapeHtml(item.name)}`,
-        )
-        .join("<br/>");
-      await Promise.all([
-        resend.emails.send({
-          from,
-          to: customer.email,
-          subject: `We've received your ZERYON order ${orderNumber}`,
-          html: `<div style="font-family:Arial;background:#0a0a0a;color:#f1f0ed;padding:40px"><p style="color:#c8b08a;letter-spacing:2px">ZERYON ADVANCED AESTHETIC TECHNOLOGY</p><h1>Order received.</h1><p>Thank you, ${escapeHtml(customer.firstName)}. Your reference is <b>${escapeHtml(orderNumber)}</b>.</p><p>${rows}</p><p>Subtotal: £${subtotal.toFixed(2)}<br/>VAT (20%): £${vat.toFixed(2)}<br/><b>Total: £${total.toFixed(2)}</b></p><p>We'll contact you to confirm configuration, training and fulfilment.</p></div>`,
-        }),
-        process.env.ADMIN_NOTIFICATION_EMAIL
-          ? resend.emails.send({
-              from,
-              to: process.env.ADMIN_NOTIFICATION_EMAIL,
-              subject: `New ZERYON order ${orderNumber}`,
-              html: `<h1>New order received</h1><p>${escapeHtml(customer.firstName)} ${escapeHtml(customer.lastName)} · ${escapeHtml(customer.email)}</p><p>${rows}</p><p>Subtotal: £${subtotal.toFixed(2)}<br/>VAT (20%): £${vat.toFixed(2)}<br/><b>Total: £${total.toFixed(2)}</b></p>`,
-            })
-          : Promise.resolve(),
-      ]);
+    try {
+      const session = await getStripe().checkout.sessions.create({
+        mode: "payment",
+        customer_email: customer.email,
+        billing_address_collection: "required",
+        phone_number_collection: { enabled: true },
+        line_items: [
+          ...items.map(
+            (item: { name: string; price: number; quantity: number }) => ({
+              quantity: item.quantity,
+              price_data: {
+                currency: "gbp",
+                unit_amount: Math.round(item.price * 100),
+                product_data: { name: item.name },
+              },
+            }),
+          ),
+          {
+            quantity: 1,
+            price_data: {
+              currency: "gbp",
+              unit_amount: Math.round(vat * 100),
+              product_data: { name: "VAT (20%)" },
+            },
+          },
+        ],
+        metadata: { orderId: order._id, orderNumber, userId: identity.userId },
+        payment_intent_data: { metadata: { orderId: order._id, orderNumber } },
+        success_url: `${getSiteUrl(request)}/order-confirmed?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${getSiteUrl(request)}/checkout?cancelled=1`,
+      });
+      await sanityWrite
+        .patch(order._id)
+        .set({ stripeCheckoutSessionId: session.id })
+        .commit();
+      return NextResponse.json({ url: session.url });
+    } catch (error) {
+      await sanityWrite.delete(order._id);
+      throw error;
     }
-    return NextResponse.json({ ok: true, orderNumber });
   } catch (error) {
     console.error(error);
     const message = error instanceof Error ? error.message : "";
@@ -129,9 +137,18 @@ export async function POST(request: Request) {
       ? 401
       : message === "INVALID_INPUT"
         ? 400
-        : 500;
+        : message === "STRIPE_NOT_CONFIGURED"
+          ? 503
+          : 500;
     return NextResponse.json(
-      { error: status === 500 ? "Could not create order" : "Invalid request" },
+      {
+        error:
+          status === 503
+            ? "Payment service is not configured"
+            : status === 500
+              ? "Could not start checkout"
+              : "Invalid request",
+      },
       { status },
     );
   }

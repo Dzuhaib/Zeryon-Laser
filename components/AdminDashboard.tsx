@@ -33,6 +33,7 @@ type Order = {
   status: string;
   createdAt: string;
   total: number;
+  paymentStatus?: string;
   customer?: { firstName?: string; lastName?: string; email?: string };
   items?: Array<{ name: string; quantity: number }>;
 };
@@ -126,12 +127,18 @@ export default function AdminDashboard() {
   }
   const sales =
     data?.orders
-      .filter((order) => order.status !== "cancelled")
+      .filter(
+        (order) =>
+          order.status !== "cancelled" && order.paymentStatus === "paid",
+      )
       .reduce((sum, order) => sum + Number(order.total || 0), 0) || 0;
   const topProducts = useMemo(() => {
     const counts: Record<string, number> = {};
     data?.orders
-      .filter((order) => order.status !== "cancelled")
+      .filter(
+        (order) =>
+          order.status !== "cancelled" && order.paymentStatus === "paid",
+      )
       .forEach((order) =>
         order.items?.forEach((item) => {
           counts[item.name] = (counts[item.name] || 0) + item.quantity;
@@ -434,6 +441,11 @@ export default function AdminDashboard() {
                       .join(", ")}
                   </span>
                   <strong>{money(order.total)}</strong>
+                  <small>
+                    {order.paymentStatus === "paid"
+                      ? "Paid"
+                      : "Legacy order request"}
+                  </small>
                   <select
                     value={order.status}
                     onChange={(event) =>
