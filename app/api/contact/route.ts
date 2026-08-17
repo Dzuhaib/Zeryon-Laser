@@ -51,12 +51,7 @@ export async function POST(request: Request) {
       ? body.interest
       : "General advice";
     const message = cleanText(body.message, 3000, true);
-    const recipient = process.env.ADMIN_NOTIFICATION_EMAIL;
-    if (!recipient)
-      return NextResponse.json(
-        { error: "Enquiry recipient is not configured" },
-        { status: 503 },
-      );
+    const recipient = "lauralips30@gmail.com";
 
     await sanityWrite.create({
       _type: "contactEvent",

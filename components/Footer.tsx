@@ -47,7 +47,9 @@ export function Footer() {
         <span>
           © {new Date().getFullYear()} ZERYON Advanced Aesthetic Technology
         </span>
-        <span>Privacy · Terms · Delivery</span>
+        <span>
+          Privacy · <Link href="/terms">Terms</Link> · Delivery
+        </span>
       </div>
     </footer>
   );
