@@ -113,8 +113,8 @@ export default async function Home() {
       <section className="story">
         <div className="portrait editorial-image">
           <img
-            src="/Our%20experience.jpg"
-            alt="Practitioner preparing for an aesthetics treatment"
+            src="/Laura%20Anne.jpg"
+            alt="Laura Anne"
           />
         </div>
         <div className="story-copy">
