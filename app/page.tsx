@@ -33,8 +33,8 @@ export default async function Home() {
             industry-leading machines, all in one place.
           </p>
           <div className="actions">
-            <Link className="button" href="#training">
-              Explore training
+            <Link className="button" href="#contact">
+              Book your free consultation
             </Link>
             <Link className="text-link" href="/machines">
               View machines <ArrowRight size={17} />
