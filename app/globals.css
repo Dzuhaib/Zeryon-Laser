@@ -70,6 +70,13 @@ h2 {
 .hero .lead {
   color: var(--muted);
 }
+.hero-question {
+  max-width: 620px;
+  margin: 24px 0 8px;
+  color: var(--text);
+  font-size: 1.15rem;
+  line-height: 1.55;
+}
 .hero .button {
   border-color: var(--gold);
   background: var(--gold);

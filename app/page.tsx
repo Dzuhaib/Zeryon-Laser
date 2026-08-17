@@ -19,19 +19,18 @@ export default async function Home() {
           />
         </div>
         <div className="hero-copy">
-          <p className="eyebrow">ZERYON Advanced Aesthetic Technology</p>
+          <p className="eyebrow">Ready to grow your clinic?</p>
           <h1>
-            Advanced technology.
+            Train. Qualify.
             <br />
-            <i>
-              Exceptional results.
-              <br />
-              Serious earning potential.
-            </i>
+            <i>Invest. Grow.</i>
           </h1>
+          <p className="hero-question">
+            Are you a medic or non-medic looking to add new treatments?
+          </p>
           <p className="lead">
-            Regulated training, carefully selected technology and honest ongoing
-            guidance for aesthetics professionals.
+            Professional training, recognised qualifications &amp;
+            industry-leading machines, all in one place.
           </p>
           <div className="actions">
             <Link className="button" href="#training">
@@ -112,10 +111,7 @@ export default async function Home() {
       </section>
       <section className="story">
         <div className="portrait editorial-image">
-          <img
-            src="/Laura%20Anne.jpg"
-            alt="Laura Anne"
-          />
+          <img src="/Laura%20Anne.jpg" alt="Laura Anne" />
         </div>
         <div className="story-copy">
           <p className="eyebrow">Our experience</p>
