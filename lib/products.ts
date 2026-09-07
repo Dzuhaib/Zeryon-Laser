@@ -9,16 +9,18 @@ export const fallbackProducts: Product[] = [
     summary:
       "Dual-wavelength diode laser lipolysis technology with professional hands-on training.",
     description:
-      "A dual-wavelength diode laser lipolysis system for practitioners expanding into advanced aesthetic and body-contouring treatments. The two wavelengths do slightly different jobs: 980nm gives a deeper thermal effect, with coagulation and tissue contraction, while 1470nm is strongly absorbed by water-rich tissue, making it useful for controlled heating of more superficial tissue and for lipolysis. Used together, fat reduction and tightening can be approached in the same treatment. The course covers treatment protocols, safe use of the technology and how to introduce the service into your clinic with confidence.",
+      "A dual-wavelength diode laser lipolysis system for practitioners expanding into advanced aesthetic and body-contouring treatments. Heat contracts existing collagen fibres, producing a tighter appearance. The healing/remodelling response can encourage new collagen formation over time. This is particularly useful where there is a combination of mild/moderate laxity and small pockets of fat. Improved facial definition is achievable, especially the lower face, jawline and submental/double-chin area — a clinical trial of 980 nm laser-assisted lipolysis found significant reduction in submental fat and concluded it could improve tightening/rejuvenation in that area. Body contouring areas such as abdomen, arms, thighs and other localised fat deposits can be treated, with tightening occurring alongside fat reduction. Two wavelengths do slightly different jobs: 980 nm provides a deeper thermal effect for coagulation and tissue contraction, while 1470 nm is strongly absorbed by water-rich tissue, useful for controlled heating of superficial tissues and lipolysis.",
     applications: [
-      "🔥 Skin tightening — heat can contract existing collagen fibres, which may give a tighter appearance",
-      "🧬 Collagen stimulation — the healing and remodelling response can encourage new collagen formation over time",
-      "✨ Improved skin laxity — often suited to mild or moderate laxity alongside small pockets of localised fat",
-      "👩‍⚕️ Facial definition — commonly treated areas include the lower face, jawline and submental region",
-      "🍑 Body contouring — abdomen, arms, thighs and other localised fat deposits, with tightening alongside fat reduction",
+      "🔥 Heat contracts existing collagen fibres, producing a tighter appearance",
+      "🧬 Collagen stimulation — the healing/remodelling response can encourage new collagen formation over time",
+      "✨ Improved skin laxity — particularly useful where there is a combination of mild/moderate laxity and small pockets of fat",
+      "👩‍⚕️ Improved facial definition — especially the lower face, jawline and submental/double-chin area. A clinical trial of 980 nm laser-assisted lipolysis found significant reduction in submental fat and concluded it could improve tightening/rejuvenation in that area",
+      "🍑 Body contouring — abdomen, arms, thighs and other localised fat deposits, with tightening occurring alongside fat reduction",
     ],
     features: [
       "980nm + 1470nm dual-wavelength technology",
+      "980 nm — deeper thermal effect for coagulation and tissue contraction",
+      "1470 nm — strongly absorbed by water-rich tissue, useful for controlled heating of superficial tissues and lipolysis",
       "Suitable for beauty therapists, medics and aesthetic practitioners",
       "Fully CE-marked machine",
       "One-year warranty",
